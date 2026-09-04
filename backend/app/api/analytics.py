@@ -107,7 +107,15 @@ def get_comparison_analytics(db: Session = Depends(get_db)):
     baseline_plans = db.query(BlockPlan).filter(BlockPlan.plan_type == "baseline").all()
     optimized_plans = db.query(BlockPlan).filter(BlockPlan.plan_type == "optimized").all()
 
+    total_tasks = db.query(MaintenanceTask).count()
+    all_assets = db.query(Asset).all()
+    avg_asset_avail = (
+        sum(a.availability for a in all_assets) / max(len(all_assets), 1)
+    ) if all_assets else 0.0
+
     def summarize(plans):
+        avail_impact = sum(p.asset_availability_impact for p in plans)
+        tasks_sched = sum(len(p.block_tasks) for p in plans)
         return {
             "total_blocks": len(plans),
             "total_block_hours": round(
@@ -120,7 +128,15 @@ def get_comparison_analytics(db: Session = Depends(get_db)):
             "avg_optimization_score": round(
                 sum(p.optimization_score for p in plans) / max(len(plans), 1), 1
             ),
-            "tasks_scheduled": sum(len(p.block_tasks) for p in plans),
+            "tasks_scheduled": tasks_sched,
+            "total_tasks": total_tasks,
+            "maintenance_completion_rate": round(
+                (tasks_sched / max(total_tasks, 1)) * 100, 1
+            ),
+            "asset_availability": round(
+                min(100.0, avg_asset_avail + avail_impact), 1
+            ),
+            "asset_availability_impact": round(avail_impact, 2),
         }
 
     baseline = summarize(baseline_plans)
@@ -136,5 +152,11 @@ def get_comparison_analytics(db: Session = Depends(get_db)):
                 baseline["train_disruption_minutes"] - optimized["train_disruption_minutes"], 1
             ),
             "additional_integrated": optimized["integrated_blocks"] - baseline["integrated_blocks"],
+            "completion_rate_improvement": round(
+                optimized["maintenance_completion_rate"] - baseline["maintenance_completion_rate"], 1
+            ),
+            "asset_availability_improvement": round(
+                optimized["asset_availability"] - baseline["asset_availability"], 1
+            ),
         },
     }

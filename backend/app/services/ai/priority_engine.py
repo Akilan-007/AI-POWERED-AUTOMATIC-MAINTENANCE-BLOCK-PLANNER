@@ -168,10 +168,13 @@ def calculate_priority(task: MaintenanceTask, db: Session) -> dict:
     }
 
 
-def compute_all_priorities(db: Session) -> list[dict]:
-    """Compute priorities for all pending/overdue maintenance tasks."""
+def compute_all_priorities(db: Session, include_scheduled: bool = True) -> list[dict]:
+    """Compute priorities for all pending/overdue/scheduled maintenance tasks."""
+    statuses = [TaskStatus.PENDING, TaskStatus.OVERDUE]
+    if include_scheduled:
+        statuses.append(TaskStatus.SCHEDULED)
     tasks = db.query(MaintenanceTask).filter(
-        MaintenanceTask.status.in_([TaskStatus.PENDING, TaskStatus.OVERDUE])
+        MaintenanceTask.status.in_(statuses)
     ).all()
 
     results = []

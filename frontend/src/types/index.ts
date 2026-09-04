@@ -302,6 +302,32 @@ export interface SimulationScenario {
   train_demand_multiplier: number;
 }
 
+export interface ComparisonSummary {
+  total_blocks: number;
+  total_block_hours: number;
+  integrated_blocks: number;
+  train_disruption_minutes: number;
+  avg_optimization_score: number;
+  tasks_scheduled: number;
+  total_tasks?: number;
+  maintenance_completion_rate?: number;
+  asset_availability?: number;
+  asset_availability_impact?: number;
+}
+
+export interface ComparisonAnalyticsData {
+  baseline: ComparisonSummary;
+  optimized: ComparisonSummary;
+  improvement: {
+    blocks_saved: number;
+    hours_saved: number;
+    disruption_saved_minutes: number;
+    additional_integrated: number;
+    completion_rate_improvement?: number;
+    asset_availability_improvement?: number;
+  };
+}
+
 export interface SimulationComparison {
   blocks_saved: number;
   blocks_saved_pct: number;

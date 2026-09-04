@@ -22,6 +22,7 @@ import {
   AssetDetection,
   DetectionSummary,
   ScanResult,
+  ComparisonAnalyticsData,
 } from '../types';
 import { mockFetch } from './mock-fallback-data';
 
@@ -123,7 +124,7 @@ export const api = {
     const q = params ? '?' + new URLSearchParams(params).toString() : '';
     const res = await apiFetch(`${API_BASE}/block-plans${q}`);
     const data = await handleResponse<BlockPlan[]>(res);
-    
+
     // Inject mock explainability & deferred tasks data for the UI
     return data.map((plan, i) => ({
       ...plan,
@@ -207,11 +208,11 @@ export const api = {
   getAnalyticsSummary: async (): Promise<AnalyticsSummary> => {
     const res = await apiFetch(`${API_BASE}/analytics/summary`);
     const data = await handleResponse<AnalyticsSummary>(res);
-    
+
     // Inject mock heatmap data and cumulative downtime saved
     const heatmap_data = {
       departments: ['ENG', 'TD', 'SNT'],
-      dates: Array.from({length: 7}, (_, i) => {
+      dates: Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() + i);
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -222,7 +223,7 @@ export const api = {
         [1, 3, 4, 7, 8, 2, 6], // SNT
       ]
     };
-    
+
     return {
       ...data,
       heatmap_data,
@@ -230,7 +231,7 @@ export const api = {
     };
   },
   getComparisonAnalytics: async (): Promise<any> => {
-    const res = await apiFetch(`${API_BASE}/analytics/comparison`);
+    const res = await fetch(`${API_BASE}/analytics/comparison`);
     return handleResponse<any>(res);
   },
 
