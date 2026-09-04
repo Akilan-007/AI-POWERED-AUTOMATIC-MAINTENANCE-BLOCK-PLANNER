@@ -144,11 +144,10 @@ export const AssetsPage: React.FC = () => {
               <button
                 key={d}
                 onClick={() => setSelectedDept(d)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  selectedDept === d
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedDept === d
                     ? 'bg-blue-600 text-white'
                     : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
               >
                 {d}
               </button>
@@ -196,8 +195,8 @@ export const AssetsPage: React.FC = () => {
                             asset.condition_score >= 75
                               ? 'text-emerald-400'
                               : asset.condition_score >= 50
-                              ? 'text-amber-400'
-                              : 'text-rose-400'
+                                ? 'text-amber-400'
+                                : 'text-rose-400'
                           }
                         >
                           {asset.condition_score}
@@ -206,13 +205,12 @@ export const AssetsPage: React.FC = () => {
                       </div>
                       <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${
-                            asset.condition_score >= 75
+                          className={`h-full rounded-full ${asset.condition_score >= 75
                               ? 'bg-emerald-500'
                               : asset.condition_score >= 50
-                              ? 'bg-amber-500'
-                              : 'bg-rose-500'
-                          }`}
+                                ? 'bg-amber-500'
+                                : 'bg-rose-500'
+                            }`}
                           style={{ width: `${asset.condition_score}%` }}
                         />
                       </div>
@@ -227,10 +225,10 @@ export const AssetsPage: React.FC = () => {
                         asset.status === 'Operational'
                           ? 'success'
                           : asset.status === 'Degraded'
-                          ? 'warning'
-                          : asset.status === 'Failed'
-                          ? 'critical'
-                          : 'default'
+                            ? 'warning'
+                            : asset.status === 'Failed'
+                              ? 'critical'
+                              : 'default'
                       }
                       size="sm"
                     >

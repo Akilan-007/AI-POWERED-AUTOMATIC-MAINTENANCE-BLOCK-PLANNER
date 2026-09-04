@@ -105,10 +105,10 @@ export const SimulationPage: React.FC = () => {
         itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] },
         data: baselinePlan
           ? [
-              baselinePlan.total_blocks,
-              roundToDecimal(baselinePlan.train_disruption_minutes / 60, 1),
-              0, // Traditional planning does not intentionally integrate multi-department blocks
-            ]
+            baselinePlan.total_blocks,
+            roundToDecimal(baselinePlan.train_disruption_minutes / 60, 1),
+            0, // Traditional planning does not intentionally integrate multi-department blocks
+          ]
           : [21, 92, 0],
       },
       {
@@ -118,10 +118,10 @@ export const SimulationPage: React.FC = () => {
         itemStyle: { color: '#10b981', borderRadius: [4, 4, 0, 0] },
         data: optimizedPlan
           ? [
-              optimizedPlan.total_blocks,
-              roundToDecimal(optimizedPlan.train_disruption_minutes / 60, 1),
-              optimizedPlan.integrated_blocks,
-            ]
+            optimizedPlan.total_blocks,
+            roundToDecimal(optimizedPlan.train_disruption_minutes / 60, 1),
+            optimizedPlan.integrated_blocks,
+          ]
           : [15, 20, 11],
       },
     ],
@@ -161,11 +161,10 @@ export const SimulationPage: React.FC = () => {
             <Card
               key={sc.id}
               onClick={() => setSelectedScenario(sc)}
-              className={`cursor-pointer transition-all ${
-                isSelected
+              className={`cursor-pointer transition-all ${isSelected
                   ? 'border-blue-500 bg-blue-950/40 shadow-lg shadow-blue-500/15'
                   : 'hover:border-slate-700'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-slate-100">{sc.name}</span>

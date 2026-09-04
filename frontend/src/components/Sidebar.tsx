@@ -1,14 +1,9 @@
 import React from 'react';
 import {
   LayoutDashboard,
-  Wrench,
-  Cpu,
-  CalendarCheck,
   CalendarDays,
-  CalendarRange,
-  Network,
-  Sparkles,
-  SlidersHorizontal,
+  Wrench,
+  Route,
   BarChart3,
   Train,
   ShieldCheck,
@@ -16,57 +11,46 @@ import {
 
 export type NavTab =
   | 'dashboard'
-  | 'tasks'
-  | 'assets'
   | 'planner'
-  | 'weekly'
-  | 'monthly'
+  | 'tasks'
   | 'network'
-  | 'insights'
-  | 'simulation'
   | 'analytics';
+
+interface NavItem {
+  id: NavTab;
+  label: string;
+  icon: React.FC<{ className?: string }>;
+  badge?: string;
+  count?: number;
+}
 
 interface SidebarProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   pendingTasksCount?: number;
-  criticalCount?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  pendingTasksCount = 0,
-  criticalCount = 0,
+  pendingTasksCount = 5,
 }) => {
-  const navItems = [
-    { id: 'dashboard' as NavTab, label: 'Dashboard', icon: LayoutDashboard },
+  const navItems: NavItem[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     {
-      id: 'planner' as NavTab,
-      label: 'Block Planner',
-      icon: CalendarCheck,
-      highlight: true,
+      id: 'planner',
+      label: 'AI Block Planner',
+      icon: CalendarDays,
       badge: 'CP-SAT',
     },
     {
-      id: 'tasks' as NavTab,
-      label: 'Maintenance Tasks',
+      id: 'tasks',
+      label: 'Maintenance Inputs',
       icon: Wrench,
       count: pendingTasksCount,
     },
-    { id: 'assets' as NavTab, label: 'Assets & Availability', icon: Cpu },
-    { id: 'weekly' as NavTab, label: 'Weekly Schedule', icon: CalendarDays },
-    { id: 'monthly' as NavTab, label: 'Monthly Schedule', icon: CalendarRange },
-    { id: 'network' as NavTab, label: 'Railway Network', icon: Network },
-    {
-      id: 'insights' as NavTab,
-      label: 'AI Insights',
-      icon: Sparkles,
-      count: criticalCount,
-      countVariant: 'critical',
-    },
-    { id: 'simulation' as NavTab, label: 'Simulation & What-If', icon: SlidersHorizontal },
-    { id: 'analytics' as NavTab, label: 'Analytics & Baseline', icon: BarChart3 },
+    { id: 'network', label: 'Network Topology', icon: Route },
+    { id: 'analytics', label: 'Performance Analytics', icon: BarChart3 },
   ];
 
   return (
@@ -89,30 +73,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navigation List */}
+      {/* Navigation List — flat, no category headers */}
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          Operations
-        </div>
-        {navItems.slice(0, 4).map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
+
           return (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                 isActive
-                  ? item.highlight
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30 font-semibold'
-                    : 'bg-slate-800/90 text-blue-400 border border-blue-500/30 font-semibold'
+                  ? 'bg-slate-800/90 text-blue-400 border-l-2 border-blue-500 font-semibold'
                   : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
               }`}
             >
               <div className="flex items-center gap-3">
                 <Icon
                   className={`w-4 h-4 ${
-                    isActive ? (item.highlight ? 'text-white' : 'text-blue-400') : 'text-slate-400'
+                    isActive ? 'text-blue-400' : 'text-slate-400'
                   }`}
                 />
                 <span>{item.label}</span>
@@ -130,70 +110,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </span>
                 )}
                 {item.count !== undefined && item.count > 0 && (
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                      item.countVariant === 'critical'
-                        ? 'bg-red-950 text-red-400 border border-red-800'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700'
-                    }`}
-                  >
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">
                     {item.count}
                   </span>
                 )}
               </div>
-            </button>
-          );
-        })}
-
-        <div className="pt-4 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          Schedules & Topology
-        </div>
-        {navItems.slice(4, 7).map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                isActive
-                  ? 'bg-slate-800/90 text-blue-400 border border-blue-500/30 font-semibold'
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </div>
-            </button>
-          );
-        })}
-
-        <div className="pt-4 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          AI & Decision Intelligence
-        </div>
-        {navItems.slice(7).map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                isActive
-                  ? 'bg-slate-800/90 text-blue-400 border border-blue-500/30 font-semibold'
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </div>
-              {item.count !== undefined && item.count > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-950 text-amber-300 border border-amber-800">
-                  {item.count}
-                </span>
-              )}
             </button>
           );
         })}

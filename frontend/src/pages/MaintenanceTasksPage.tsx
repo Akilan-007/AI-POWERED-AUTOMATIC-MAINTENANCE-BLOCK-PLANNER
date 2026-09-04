@@ -13,7 +13,7 @@ import {
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import { api } from '../services/api';
-import { MaintenanceTask, CandidateWindow } from '../types';
+import { MaintenanceTask, BlockPlan } from '../types';
 
 export const MaintenanceTasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
@@ -175,8 +175,8 @@ export const MaintenanceTasksPage: React.FC = () => {
                         t.department_code === 'ENG'
                           ? 'info'
                           : t.department_code === 'TD'
-                          ? 'warning'
-                          : 'purple'
+                            ? 'warning'
+                            : 'purple'
                       }
                       size="sm"
                     >
@@ -191,13 +191,12 @@ export const MaintenanceTasksPage: React.FC = () => {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`font-mono font-bold px-1.5 py-0.5 rounded text-[11px] ${
-                          t.priority >= 80
-                            ? 'bg-red-950 text-red-400 border border-red-800'
-                            : t.priority >= 60
+                        className={`font-mono font-bold px-1.5 py-0.5 rounded text-[11px] ${t.priority >= 80
+                          ? 'bg-red-950 text-red-400 border border-red-800'
+                          : t.priority >= 60
                             ? 'bg-amber-950 text-amber-400 border border-amber-800'
                             : 'bg-slate-800 text-slate-300'
-                        }`}
+                          }`}
                       >
                         {t.priority}
                       </span>
@@ -211,8 +210,8 @@ export const MaintenanceTasksPage: React.FC = () => {
                         t.status === 'Scheduled'
                           ? 'success'
                           : t.status === 'Overdue'
-                          ? 'critical'
-                          : 'default'
+                            ? 'critical'
+                            : 'default'
                       }
                       size="sm"
                     >

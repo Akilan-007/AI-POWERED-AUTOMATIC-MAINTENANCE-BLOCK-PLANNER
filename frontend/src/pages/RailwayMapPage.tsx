@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Network, Cpu, Info, ShieldCheck, Wrench, Layers } from 'lucide-react';
-import { Card } from '../components/Card';
-import { Badge } from '../components/Badge';
+import { Card } from "../components/Card";
+import { Badge } from "../components/Badge";
+import { CorridorMap } from '../components/CorridorMap';
 import { api } from '../services/api';
 import { NetworkData, StationNode, SectionEdge, Asset } from '../types';
+import { useDisruption } from '../components/DisruptionController';
 
 export const RailwayMapPage: React.FC = () => {
+  const { activeDisruption } = useDisruption();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [network, setNetwork] = useState<NetworkData | null>(null);
@@ -31,114 +34,6 @@ export const RailwayMapPage: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Initialize and render Leaflet Map
-  useEffect(() => {
-    if (!mapContainerRef.current || !network) return;
-
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
-
-    // Center map around Tamil Nadu Chennai-Salem corridor mid-point
-    const map = L.map(mapContainerRef.current, {
-      center: [12.45, 79.20],
-      zoom: 8,
-      zoomControl: true,
-    });
-    mapInstanceRef.current = map;
-
-    // Dark sleek tile layer (CartoDB Dark Matter)
-    L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }
-    ).addTo(map);
-
-    // Render Track Sections as Polyline tracks
-    network.sections.forEach((sec) => {
-      const latlngs: [number, number][] = [
-        [sec.from_lat, sec.from_lng],
-        [sec.to_lat, sec.to_lng],
-      ];
-
-      // Track background line
-      L.polyline(latlngs, {
-        color: '#1e293b',
-        weight: 6,
-        opacity: 0.9,
-      }).addTo(map);
-
-      // Track active line
-      const trackLine = L.polyline(latlngs, {
-        color: sec.active_blocks > 0 ? '#06b6d4' : '#3b82f6',
-        weight: 3,
-        dashArray: sec.active_blocks > 0 ? '6, 6' : undefined,
-        opacity: 0.9,
-      }).addTo(map);
-
-      trackLine.on('click', () => {
-        setSelectedSection(sec);
-      });
-
-      // Assets on this section
-      sec.assets.forEach((asset) => {
-        const pos = asset.position_on_section ?? 0.5;
-        const assetLat = sec.from_lat + (sec.to_lat - sec.from_lat) * pos;
-        const assetLng = sec.from_lng + (sec.to_lng - sec.from_lng) * pos;
-
-        // Custom circular marker
-        const markerColor =
-          asset.status === 'Operational'
-            ? '#10b981'
-            : asset.status === 'Degraded'
-            ? '#f59e0b'
-            : '#ef4444';
-
-        const assetIcon = L.divIcon({
-          className: 'custom-asset-marker',
-          html: `<div style="background-color: ${markerColor}; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0f172a; box-shadow: 0 0 6px ${markerColor};"></div>`,
-          iconSize: [10, 10],
-          iconAnchor: [5, 5],
-        });
-
-        const marker = L.marker([assetLat, assetLng], { icon: assetIcon }).addTo(map);
-        marker.on('click', () => {
-          setSelectedAsset(asset);
-          setSelectedSection(sec);
-        });
-      });
-    });
-
-    // Render Station Nodes
-    network.stations.forEach((stn) => {
-      const stationIcon = L.divIcon({
-        className: 'custom-station-marker',
-        html: `<div style="background: #0f172a; color: #f8fafc; border: 2px solid #3b82f6; border-radius: 6px; padding: 2px 6px; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                ${stn.code}
-               </div>`,
-        iconSize: [40, 20],
-        iconAnchor: [20, 10],
-      });
-
-      const marker = L.marker([stn.lat, stn.lng], { icon: stationIcon }).addTo(map);
-      marker.on('click', () => {
-        setSelectedStation(stn);
-      });
-    });
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [network]);
 
   return (
     <div className="space-y-6">
@@ -184,9 +79,13 @@ export const RailwayMapPage: React.FC = () => {
         {/* Map Container (8 cols) */}
         <div className="lg:col-span-8">
           <Card className="p-2 overflow-hidden">
-            <div
-              ref={mapContainerRef}
-              className="w-full h-[620px] rounded-lg overflow-hidden bg-slate-950"
+            <CorridorMap
+              network={network}
+              selectedSection={selectedSection}
+              onSelectAsset={setSelectedAsset}
+              onSelectSection={setSelectedSection}
+              onSelectStation={setSelectedStation}
+              height="620px"
             />
           </Card>
         </div>
@@ -205,8 +104,8 @@ export const RailwayMapPage: React.FC = () => {
                       selectedAsset.status === 'Operational'
                         ? 'success'
                         : selectedAsset.status === 'Degraded'
-                        ? 'warning'
-                        : 'critical'
+                          ? 'warning'
+                          : 'critical'
                     }
                     size="sm"
                   >
@@ -266,23 +165,41 @@ export const RailwayMapPage: React.FC = () => {
           {/* Corridor Topology Summary */}
           <Card title="Corridor Topology" subtitle="Chennai - Salem Mainline (Southern Railway, Tamil Nadu)">
             <div className="space-y-2 text-xs">
-              {network?.stations.map((stn, idx) => (
-                <div
-                  key={stn.code}
-                  className="flex items-center justify-between p-2 rounded bg-slate-900/60 border border-slate-800/80 font-mono text-[11px]"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-blue-900/50 text-blue-400 flex items-center justify-center font-bold text-[10px]">
-                      {idx + 1}
-                    </span>
-                    <span className="font-bold text-slate-200">{stn.code}</span>
-                    <span className="text-slate-400 font-sans text-xs">{stn.name}</span>
+              {network?.stations.map((stn: any, idx: number) => {
+                const isDisrupted = activeDisruption && stn.code === activeDisruption.assetId;
+                return (
+                  <div
+                    key={stn.code}
+                    className={`flex items-center justify-between p-2 rounded border font-mono text-[11px] transition-colors ${
+                      isDisrupted 
+                        ? 'bg-red-950/40 border-red-500/50 text-red-200' 
+                        : 'bg-slate-900/60 border-slate-800/80 text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] ${
+                        isDisrupted ? 'bg-red-900/50 text-red-400' : 'bg-blue-900/50 text-blue-400'
+                      }`}>
+                        {idx + 1}
+                      </span>
+                      <span className="font-bold">{stn.code}</span>
+                      <span className={`font-sans text-xs ${isDisrupted ? 'text-red-300' : 'text-slate-400'}`}>
+                        {stn.name}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[10px] ${isDisrupted ? 'text-red-400' : 'text-slate-400'}`}>
+                        {stn.lat.toFixed(2)}, {stn.lng.toFixed(2)}
+                      </span>
+                      {isDisrupted && (
+                        <span className="animate-pulse text-[9px] font-bold text-red-500 uppercase tracking-widest">
+                          {activeDisruption.severity}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-slate-400 text-[10px]">
-                    {stn.lat.toFixed(2)}, {stn.lng.toFixed(2)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
         </div>

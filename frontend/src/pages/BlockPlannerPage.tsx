@@ -16,15 +16,17 @@ import {
   ShieldCheck,
   Zap,
 } from 'lucide-react';
-import { Card } from '../components/Card';
-import { Badge } from '../components/Badge';
-import { api } from '../services/api';
+import { Card } from '@/components/Card';
+import { GanttTimeline } from '@/components/GanttTimeline';
+import { Badge } from '@/components/Badge';
+import { api } from '@/services/api';
 import {
   MaintenanceTask,
   BlockPlan,
   OptimizationResult,
   ComparisonResult,
-} from '../types';
+} from '@/types';
+import { useDisruption } from '../components/DisruptionController';
 
 export const BlockPlannerPage: React.FC = () => {
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
@@ -36,6 +38,41 @@ export const BlockPlannerPage: React.FC = () => {
   const [isComputingPriorities, setIsComputingPriorities] = useState<boolean>(false);
   const [activeMode, setActiveMode] = useState<'optimized' | 'baseline'>('optimized');
   const [loading, setLoading] = useState<boolean>(true);
+
+  const { activeDisruption } = useDisruption();
+
+  const displayPlans = React.useMemo(() => {
+    if (!activeDisruption) return plans;
+    
+    const emergencyPlan: BlockPlan = {
+      id: 9999,
+      plan_date: activeDisruption.timestamp.split('T')[0],
+      block_window_id: 999,
+      section_code: activeDisruption.assetId + ' (CRITICAL)',
+      window_start: 'IMMEDIATE',
+      window_end: `+${activeDisruption.estimatedDowntimeHours}HRS`,
+      status: 'Emergency',
+      optimization_score: 0,
+      train_disruption_minutes: activeDisruption.estimatedDowntimeHours * 60,
+      asset_availability_impact: -25.0,
+      is_integrated: 0,
+      departments_involved: ['EMERGENCY'],
+      plan_type: 'emergency',
+      block_tasks: [
+        {
+          id: 99991,
+          block_plan_id: 9999,
+          maintenance_task_id: 99991,
+          task_code: activeDisruption.type,
+          task_description: activeDisruption.description,
+          start_time: 'IMMEDIATE',
+          end_time: 'TBD',
+        }
+      ],
+      reasoning: 'EMERGENCY OVERRIDE: Active disruption triggered. Standard OR-Tools CP-SAT blocks paused or re-routed until isolation resolves.'
+    };
+    return [emergencyPlan, ...plans];
+  }, [plans, activeDisruption]);
 
   useEffect(() => {
     loadPlannerData();
@@ -153,11 +190,10 @@ export const BlockPlannerPage: React.FC = () => {
           <button
             onClick={handleRunBaseline}
             disabled={isOptimizing}
-            className={`px-3.5 py-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all ${
-              activeMode === 'baseline'
+            className={`px-3.5 py-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all ${activeMode === 'baseline'
                 ? 'bg-amber-950/80 border-amber-600 text-amber-300'
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
-            }`}
+              }`}
           >
             <span>Run Baseline (Heuristic)</span>
           </button>
@@ -195,11 +231,10 @@ export const BlockPlannerPage: React.FC = () => {
                   <button
                     key={dept}
                     onClick={() => setSelectedDept(dept)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${
-                      selectedDept === dept
+                    className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${selectedDept === dept
                         ? 'bg-blue-600 text-white'
                         : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
+                      }`}
                   >
                     {dept}
                   </button>
@@ -222,8 +257,8 @@ export const BlockPlannerPage: React.FC = () => {
                             task.department_code === 'ENG'
                               ? 'info'
                               : task.department_code === 'TD'
-                              ? 'warning'
-                              : 'purple'
+                                ? 'warning'
+                                : 'purple'
                           }
                           size="sm"
                         >
@@ -240,13 +275,12 @@ export const BlockPlannerPage: React.FC = () => {
 
                     <div className="text-right shrink-0">
                       <div
-                        className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded ${
-                          task.priority >= 80
+                        className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded ${task.priority >= 80
                             ? 'bg-red-950 text-red-400 border border-red-800'
                             : task.priority >= 60
-                            ? 'bg-amber-950 text-amber-400 border border-amber-800'
-                            : 'bg-slate-800 text-slate-300'
-                        }`}
+                              ? 'bg-amber-950 text-amber-400 border border-amber-800'
+                              : 'bg-slate-800 text-slate-300'
+                          }`}
                       >
                         P: {task.priority}
                       </div>
@@ -272,7 +306,7 @@ export const BlockPlannerPage: React.FC = () => {
         {/* Center Column: Scheduled Block Windows Timeline (45% / 5 cols) */}
         <div className="xl:col-span-5 space-y-4">
           <Card
-            title={`Optimized Maintenance Blocks (${plans.length})`}
+            title={`Optimized Maintenance Blocks (${displayPlans.length})`}
             subtitle={
               activeMode === 'optimized'
                 ? 'OR-Tools CP-SAT scheduled windows with multi-department grouping'
@@ -285,22 +319,21 @@ export const BlockPlannerPage: React.FC = () => {
             }
           >
             <div className="space-y-3 max-h-[680px] overflow-y-auto pr-1">
-              {plans.length === 0 ? (
+              {displayPlans.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 text-xs">
                   No block plans generated yet. Click "Generate Optimized Plan" above.
                 </div>
               ) : (
-                plans.map((plan) => {
+                displayPlans.map((plan) => {
                   const isSelected = selectedPlan?.id === plan.id;
                   return (
                     <div
                       key={plan.id}
                       onClick={() => setSelectedPlan(plan)}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                        isSelected
+                      className={`p-4 rounded-xl border transition-all cursor-pointer ${isSelected
                           ? 'bg-[#15233e] border-blue-500/80 shadow-lg shadow-blue-500/10'
                           : 'bg-slate-900/80 border-slate-800/80 hover:border-slate-700/80'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -346,13 +379,12 @@ export const BlockPlannerPage: React.FC = () => {
                           plan.departments_involved.map((dept, i) => (
                             <span
                               key={i}
-                              className={`text-[10px] px-2 py-0.5 rounded font-bold ${
-                                dept === 'ENG'
+                              className={`text-[10px] px-2 py-0.5 rounded font-bold ${dept === 'ENG'
                                   ? 'bg-blue-950 text-blue-300 border border-blue-800'
                                   : dept === 'TD'
-                                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                                  : 'bg-purple-950 text-purple-300 border border-purple-800'
-                              }`}
+                                    ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                                    : 'bg-purple-950 text-purple-300 border border-purple-800'
+                                }`}
                             >
                               {dept}
                             </span>
@@ -414,19 +446,19 @@ export const BlockPlannerPage: React.FC = () => {
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                   <div className="text-[10px] text-slate-400">Total Blocks</div>
                   <div className="text-base font-bold text-slate-100 mt-0.5">
-                    {plans.length}
+                    {displayPlans.length}
                   </div>
                 </div>
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                   <div className="text-[10px] text-slate-400">Integrated</div>
                   <div className="text-base font-bold text-purple-400 mt-0.5">
-                    {plans.filter((p) => p.is_integrated).length}
+                    {displayPlans.filter((p) => p.is_integrated).length}
                   </div>
                 </div>
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                   <div className="text-[10px] text-slate-400">Train Disruption</div>
                   <div className="text-base font-bold text-amber-400 mt-0.5">
-                    {plans.reduce((acc, p) => acc + p.train_disruption_minutes, 0)}m
+                    {displayPlans.reduce((acc, p) => acc + p.train_disruption_minutes, 0)}m
                   </div>
                 </div>
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
@@ -484,6 +516,20 @@ export const BlockPlannerPage: React.FC = () => {
             )}
           </Card>
         </div>
+      </div>
+
+      {/* ── CP-SAT Gantt Visualiser ──────────────────────────────────────────── */}
+      <div className="mt-2">
+        {/* Section divider */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent" />
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            Mega-Block Gantt Visualiser
+          </div>
+          <div className="h-px flex-1 bg-gradient-to-l from-slate-800 to-transparent" />
+        </div>
+        <GanttTimeline />
       </div>
     </div>
   );

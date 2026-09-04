@@ -4,17 +4,17 @@ uvicorn[standard]==0.30.6
 pydantic==2.9.1
 pydantic-settings==2.5.2
 sqlalchemy==2.0.35
-psycopg2-binary==2.9.9
+psycopg2-binary>=2.9.10
 alembic==1.13.2
 python-dotenv==1.0.1
 
 # AI / Data
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.5.1
+pandas>=2.2.3
+numpy>=1.26.4
+scikit-learn>=1.5.1
 
 # Optimization
-ortools==9.10.4067
+ortools>=9.10
 
 # Graph
 networkx==3.3

@@ -169,12 +169,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         },
         data: detectionSummary
           ? [
-              { value: detectionSummary.critical_assets, name: 'CRITICAL', itemStyle: { color: '#ef4444' } },
-              { value: detectionSummary.overdue_assets, name: 'OVERDUE', itemStyle: { color: '#f97316' } },
-              { value: detectionSummary.maintenance_due, name: 'DUE', itemStyle: { color: '#f59e0b' } },
-              { value: detectionSummary.monitor_assets, name: 'MONITOR', itemStyle: { color: '#06b6d4' } },
-              { value: detectionSummary.healthy_assets, name: 'HEALTHY', itemStyle: { color: '#10b981' } },
-            ]
+            { value: detectionSummary.critical_assets, name: 'CRITICAL', itemStyle: { color: '#ef4444' } },
+            { value: detectionSummary.overdue_assets, name: 'OVERDUE', itemStyle: { color: '#f97316' } },
+            { value: detectionSummary.maintenance_due, name: 'DUE', itemStyle: { color: '#f59e0b' } },
+            { value: detectionSummary.monitor_assets, name: 'MONITOR', itemStyle: { color: '#06b6d4' } },
+            { value: detectionSummary.healthy_assets, name: 'HEALTHY', itemStyle: { color: '#10b981' } },
+          ]
           : [],
       },
     ],
@@ -208,10 +208,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         type: 'bar',
         data: summary
           ? [
-              summary.assets_by_department.ENG || 0,
-              summary.assets_by_department.TD || 0,
-              summary.assets_by_department.SNT || 0,
-            ]
+            summary.assets_by_department.ENG || 0,
+            summary.assets_by_department.TD || 0,
+            summary.assets_by_department.SNT || 0,
+          ]
           : [],
         itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
       },
@@ -220,10 +220,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         type: 'bar',
         data: summary
           ? [
-              summary.tasks_by_department.ENG || 0,
-              summary.tasks_by_department.TD || 0,
-              summary.tasks_by_department.SNT || 0,
-            ]
+            summary.tasks_by_department.ENG || 0,
+            summary.tasks_by_department.TD || 0,
+            summary.tasks_by_department.SNT || 0,
+          ]
           : [],
         itemStyle: { color: '#06b6d4', borderRadius: [4, 4, 0, 0] },
       },
@@ -263,10 +263,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={() => onNavigate('simulation')}
+              onClick={() => onNavigate('analytics')}
               className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all"
             >
-              <span>Simulation</span>
+              <span>Analytics</span>
             </button>
           </div>
         </div>
@@ -299,11 +299,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <button
             onClick={handleRunHealthScan}
             disabled={isScanning}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition-all shrink-0 ${
-              isScanning
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition-all shrink-0 ${isScanning
                 ? 'bg-slate-700 cursor-not-allowed'
                 : 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 shadow-red-500/25 active:scale-98'
-            }`}
+              }`}
           >
             {isScanning ? (
               <>
@@ -382,13 +381,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             {activeDetections.slice(0, 6).map((asset) => (
               <div
                 key={asset.asset_id}
-                className={`p-4 rounded-xl border transition-all flex flex-col justify-between ${
-                  asset.maintenance_status === 'CRITICAL'
+                className={`p-4 rounded-xl border transition-all flex flex-col justify-between ${asset.maintenance_status === 'CRITICAL'
                     ? 'bg-gradient-to-br from-red-950/40 to-slate-900 border-red-800/80 shadow-lg shadow-red-950/30'
                     : asset.maintenance_status === 'OVERDUE'
-                    ? 'bg-gradient-to-br from-orange-950/40 to-slate-900 border-orange-800/80'
-                    : 'bg-gradient-to-br from-amber-950/40 to-slate-900 border-amber-800/70'
-                }`}
+                      ? 'bg-gradient-to-br from-orange-950/40 to-slate-900 border-orange-800/80'
+                      : 'bg-gradient-to-br from-amber-950/40 to-slate-900 border-amber-800/70'
+                  }`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -397,8 +395,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                         asset.maintenance_status === 'CRITICAL'
                           ? 'critical'
                           : asset.maintenance_status === 'OVERDUE'
-                          ? 'warning'
-                          : 'high'
+                            ? 'warning'
+                            : 'high'
                       }
                       size="sm"
                     >
@@ -422,8 +420,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                           asset.condition_score < 40
                             ? 'text-red-400'
                             : asset.condition_score < 60
-                            ? 'text-amber-400'
-                            : 'text-slate-200'
+                              ? 'text-amber-400'
+                              : 'text-slate-200'
                         }
                       >
                         {asset.condition_score}
@@ -442,7 +440,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   {/* Reasons list */}
                   <div className="mt-3 space-y-1">
                     <div className="text-[10px] font-semibold text-slate-400 uppercase">Detection Rationale:</div>
-                    {asset.reasons.slice(0, 2).map((r, i) => (
+                    {asset.reasons.slice(0, 2).map((r: any, i: number) => (
                       <div key={i} className="text-[11px] text-slate-300 leading-snug flex items-start gap-1.5">
                         <span className="text-red-400 shrink-0">&bull;</span>
                         <span>{r}</span>
@@ -543,7 +541,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           subtitle="Real-time reasoning from priority & constraint validation engine"
           action={
             <button
-              onClick={() => onNavigate('insights')}
+              onClick={() => onNavigate('analytics')}
               className="text-xs text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1"
             >
               View All <ArrowRight className="w-3 h-3" />
@@ -572,8 +570,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                         ins.severity === 'critical'
                           ? 'critical'
                           : ins.type === 'grouping'
-                          ? 'purple'
-                          : 'info'
+                            ? 'purple'
+                            : 'info'
                       }
                       size="sm"
                     >
@@ -613,9 +611,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-2 h-10 rounded-full shrink-0 ${
-                      plan.is_integrated ? 'bg-purple-500' : 'bg-blue-500'
-                    }`}
+                    className={`w-2 h-10 rounded-full shrink-0 ${plan.is_integrated ? 'bg-purple-500' : 'bg-blue-500'
+                      }`}
                   />
                   <div>
                     <div className="flex items-center gap-2">

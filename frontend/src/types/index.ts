@@ -142,7 +142,10 @@ export interface BlockPlan {
   departments_involved: string[];
   plan_type: string;
   reasoning?: string;
+  alternatives_checked?: string[];
+  passenger_paths_checked?: string[];
   block_tasks: BlockTask[];
+  deferred_tasks?: BlockTask[];
 }
 
 export interface ValidationResult {
@@ -248,6 +251,12 @@ export interface AnalyticsSummary {
   tasks_by_priority: Record<string, number>;
   tasks_by_department: Record<string, number>;
   condition_distribution: Record<string, number>;
+  heatmap_data?: {
+    departments: string[];
+    dates: string[];
+    matrix: number[][];
+  };
+  cumulative_downtime_saved?: number;
 }
 
 export interface StationNode {
@@ -356,3 +365,14 @@ export interface ScanResult {
   active_detections: AssetDetection[];
 }
 
+export type DisruptionSeverity = 'WARNING' | 'CRITICAL' | 'CATASTROPHIC';
+
+export interface DisruptionEvent {
+  id: string;
+  assetId: string;
+  type: string;
+  description: string;
+  severity: DisruptionSeverity;
+  timestamp: string;
+  estimatedDowntimeHours: number;
+}

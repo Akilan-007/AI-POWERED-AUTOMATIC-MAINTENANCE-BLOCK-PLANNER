@@ -48,21 +48,19 @@ export const WeeklyPlanPage: React.FC = () => {
           <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-1">
             <button
               onClick={() => setActivePlanType('optimized')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                activePlanType === 'optimized'
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${activePlanType === 'optimized'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               OR-Tools Optimized
             </button>
             <button
               onClick={() => setActivePlanType('baseline')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                activePlanType === 'baseline'
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${activePlanType === 'baseline'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               Baseline Heuristic
             </button>
@@ -102,7 +100,7 @@ export const WeeklyPlanPage: React.FC = () => {
 
       {/* Gantt-style Timeline per Day */}
       <div className="space-y-4">
-        {weeklyPlan?.days.map((day) => (
+        {weeklyPlan?.days.map((day: any) => (
           <Card key={day.date} className="p-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 mb-3 border-b border-slate-800/80 gap-2">
               <div className="flex items-center gap-3">
@@ -131,14 +129,13 @@ export const WeeklyPlanPage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {day.blocks.map((block) => (
+                {day.blocks.map((block: any) => (
                   <div
                     key={block.id}
-                    className={`p-3.5 rounded-xl border text-xs transition-all ${
-                      block.is_integrated
+                    className={`p-3.5 rounded-xl border text-xs transition-all ${block.is_integrated
                         ? 'bg-purple-950/20 border-purple-800/50 hover:border-purple-600'
                         : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -166,7 +163,7 @@ export const WeeklyPlanPage: React.FC = () => {
 
                     <div className="flex items-center gap-1 mt-2.5">
                       <span className="text-[10px] text-slate-400">Depts:</span>
-                      {block.departments_involved.map((dept, i) => (
+                      {block.departments_involved.map((dept: any, i: number) => (
                         <span
                           key={i}
                           className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300 border border-slate-700"
@@ -177,7 +174,7 @@ export const WeeklyPlanPage: React.FC = () => {
                     </div>
 
                     <div className="mt-2 pt-2 border-t border-slate-800/60 text-[11px] text-slate-300 space-y-1">
-                      {block.block_tasks.map((bt) => (
+                      {block.block_tasks.map((bt: any) => (
                         <div key={bt.id} className="flex justify-between font-mono text-[10px]">
                           <span className="font-semibold text-slate-200">{bt.task_code}</span>
                           <span className="text-slate-400 truncate max-w-[130px]">

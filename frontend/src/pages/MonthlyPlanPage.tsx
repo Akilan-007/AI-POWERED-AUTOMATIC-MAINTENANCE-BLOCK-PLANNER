@@ -101,11 +101,10 @@ export const MonthlyPlanPage: React.FC = () => {
               (wk, idx) => (
                 <div
                   key={idx}
-                  className={`p-4 rounded-xl border ${
-                    idx === 0
+                  className={`p-4 rounded-xl border ${idx === 0
                       ? 'bg-blue-950/30 border-blue-800/80 shadow-md shadow-blue-500/10'
                       : 'bg-slate-900/80 border-slate-800'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-slate-100">{wk}</span>

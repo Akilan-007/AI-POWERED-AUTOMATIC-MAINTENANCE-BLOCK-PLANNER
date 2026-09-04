@@ -55,11 +55,10 @@ export const AIInsightsPage: React.FC = () => {
             <button
               key={cat}
               onClick={() => setSelectedFilter(cat)}
-              className={`px-3 py-1 rounded-md font-semibold transition-all ${
-                selectedFilter === cat
+              className={`px-3 py-1 rounded-md font-semibold transition-all ${selectedFilter === cat
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -81,10 +80,10 @@ export const AIInsightsPage: React.FC = () => {
                     ins.severity === 'critical'
                       ? 'critical'
                       : ins.type === 'grouping'
-                      ? 'purple'
-                      : ins.type === 'conflict'
-                      ? 'warning'
-                      : 'info'
+                        ? 'purple'
+                        : ins.type === 'conflict'
+                          ? 'warning'
+                          : 'info'
                   }
                   size="sm"
                 >

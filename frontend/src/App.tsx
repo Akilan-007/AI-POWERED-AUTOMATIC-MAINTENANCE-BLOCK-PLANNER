@@ -4,21 +4,18 @@ import { Navbar } from './components/Navbar';
 import { DashboardPage } from './pages/DashboardPage';
 import { BlockPlannerPage } from './pages/BlockPlannerPage';
 import { MaintenanceTasksPage } from './pages/MaintenanceTasksPage';
-import { AssetsPage } from './pages/AssetsPage';
-import { WeeklyPlanPage } from './pages/WeeklyPlanPage';
-import { MonthlyPlanPage } from './pages/MonthlyPlanPage';
 import { RailwayMapPage } from './pages/RailwayMapPage';
-import { AIInsightsPage } from './pages/AIInsightsPage';
-import { SimulationPage } from './pages/SimulationPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { DemoModeIndicator } from './components/DemoModeIndicator';
 import { api } from './services/api';
 
+import { DisruptionProvider } from './components/DisruptionController';
+
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<NavTab>('analytics');
   const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
   const [lastOptimizedTime, setLastOptimizedTime] = useState<string>('');
   const [pendingCount, setPendingCount] = useState<number>(0);
-  const [criticalCount, setCriticalCount] = useState<number>(0);
 
   useEffect(() => {
     loadBadgeCounts();
@@ -28,7 +25,6 @@ export const App: React.FC = () => {
     try {
       const tasks = await api.getMaintenanceTasks();
       setPendingCount(tasks.filter((t) => t.status === 'Pending' || t.status === 'Overdue').length);
-      setCriticalCount(tasks.filter((t) => t.criticality === 'Critical').length);
     } catch (err) {
       console.error('Failed to load counts', err);
     }
@@ -43,7 +39,7 @@ export const App: React.FC = () => {
         now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })
       );
       loadBadgeCounts();
-      // If not already in planner or weekly view, take user to planner to see the result
+      // If not already in planner, take user to planner to see the result
       if (activeTab === 'dashboard') {
         setActiveTab('planner');
       }
@@ -55,44 +51,42 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#070c18] text-slate-100">
-      {/* Sidebar Navigation */}
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        pendingTasksCount={pendingCount}
-        criticalCount={criticalCount}
-      />
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        {/* Navbar */}
-        <Navbar
-          onRunOptimization={handleRunOptimization}
-          isOptimizing={isOptimizing}
-          lastOptimizedTime={lastOptimizedTime}
+    <DisruptionProvider>
+      <div className="flex h-screen w-screen overflow-hidden bg-[#070c18] text-slate-100">
+        {/* Sidebar Navigation */}
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          pendingTasksCount={pendingCount}
         />
 
-        {/* Dynamic Page Views with scroll */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-[#0a0f1d] to-[#070c18]">
-          {activeTab === 'dashboard' && (
-            <DashboardPage
-              onNavigate={setActiveTab}
-              onRunOptimization={handleRunOptimization}
-            />
-          )}
-          {activeTab === 'planner' && <BlockPlannerPage />}
-          {activeTab === 'tasks' && <MaintenanceTasksPage />}
-          {activeTab === 'assets' && <AssetsPage />}
-          {activeTab === 'weekly' && <WeeklyPlanPage />}
-          {activeTab === 'monthly' && <MonthlyPlanPage />}
-          {activeTab === 'network' && <RailwayMapPage />}
-          {activeTab === 'insights' && <AIInsightsPage />}
-          {activeTab === 'simulation' && <SimulationPage />}
-          {activeTab === 'analytics' && <AnalyticsPage />}
-        </main>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+          {/* Navbar */}
+          <Navbar
+            onRunOptimization={handleRunOptimization}
+            isOptimizing={isOptimizing}
+            lastOptimizedTime={lastOptimizedTime}
+          />
+
+          {/* Dynamic Page Views with scroll */}
+          <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-[#0a0f1d] to-[#070c18]">
+            {activeTab === 'dashboard' && (
+              <DashboardPage
+                onNavigate={setActiveTab}
+                onRunOptimization={handleRunOptimization}
+              />
+            )}
+            {activeTab === 'planner' && <BlockPlannerPage />}
+            {activeTab === 'tasks' && <MaintenanceTasksPage />}
+            {activeTab === 'network' && <RailwayMapPage />}
+            {activeTab === 'analytics' && <AnalyticsPage />}
+          </main>
+        </div>
+        
+        <DemoModeIndicator />
       </div>
-    </div>
+    </DisruptionProvider>
   );
 };
 
