@@ -22,6 +22,7 @@ import {
   AssetDetection,
   DetectionSummary,
   ScanResult,
+  ComparisonAnalyticsData,
 } from '../types';
 
 const API_BASE = '/api';
@@ -161,9 +162,9 @@ export const api = {
     const res = await fetch(`${API_BASE}/analytics/summary`);
     return handleResponse<AnalyticsSummary>(res);
   },
-  getComparisonAnalytics: async (): Promise<any> => {
+  getComparisonAnalytics: async (): Promise<ComparisonAnalyticsData> => {
     const res = await fetch(`${API_BASE}/analytics/comparison`);
-    return handleResponse<any>(res);
+    return handleResponse<ComparisonAnalyticsData>(res);
   },
 
   // Network
