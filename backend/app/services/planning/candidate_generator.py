@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     MaintenanceTask, BlockWindow, TrainSchedule, TrackSection,
-    TaskStatus, BlockStatus,
+    TaskStatus, BlockStatus, TrainPriority,
 )
 from app.schemas import CandidateWindow, ValidationResult
 
@@ -67,9 +67,10 @@ def generate_candidates_for_task(
     4. Return list of feasible (and infeasible with reasons) candidates
     """
     if not start_date:
-        start_date = date.today()
+        today = date.today()
+        start_date = today - timedelta(days=today.weekday())
     if not end_date:
-        end_date = start_date + timedelta(days=7)
+        end_date = start_date + timedelta(days=6)
 
     section_id = task.section_id
     duration_needed = task.duration_minutes
@@ -120,28 +121,33 @@ def generate_candidates_for_task(
 
         # Check 2: Train conflicts
         day_schedules = schedule_by_date.get(window.date, [])
-        conflict_trains = []
+        critical_conflicts = []
+        regular_conflicts = []
         for ts in day_schedules:
             if _times_overlap(window.start_time, window.end_time, ts.arrival_time, ts.departure_time):
-                train_name = ts.train.train_name if ts.train else ts.train_id
+                train_name = ts.train.train_name if ts.train else str(ts.train_id)
                 train_number = ts.train.train_number if ts.train else ""
-                conflict_trains.append(f"{train_number} {train_name}")
+                priority = ts.train.priority if ts.train else TrainPriority.MEDIUM
+                info = f"{train_number} {train_name}".strip()
+                if priority in (TrainPriority.CRITICAL, TrainPriority.HIGH):
+                    critical_conflicts.append(info)
+                else:
+                    regular_conflicts.append(info)
 
-        if conflict_trains:
-            if len(conflict_trains) >= 3:
-                violations.append(
-                    f"Heavy train traffic: {len(conflict_trains)} trains conflict ({', '.join(conflict_trains[:3])}...)"
-                )
-            else:
-                warnings.append(
-                    f"Train conflict with: {', '.join(conflict_trains)}. Trains may need rescheduling."
-                )
+        if critical_conflicts:
+            violations.append(
+                f"High-priority train conflict: {len(critical_conflicts)} critical train(s) scheduled ({', '.join(critical_conflicts[:3])})"
+            )
+        if regular_conflicts:
+            warnings.append(
+                f"Train conflict with: {', '.join(regular_conflicts[:3])}. Disruption will be penalized."
+            )
 
         feasible = len(violations) == 0
         score = 0.0
         if feasible:
             # Score: prefer windows with fewer conflicts, earlier dates
-            conflict_penalty = len(conflict_trains) * 10
+            conflict_penalty = len(regular_conflicts) * 8
             days_away = (window.date - date.today()).days
             freshness_bonus = max(0, 20 - days_away * 2)
             duration_bonus = min(20, (window_duration - duration_needed) / 10)
@@ -170,10 +176,14 @@ def generate_all_candidates(
     db: Session,
     start_date: date | None = None,
     end_date: date | None = None,
+    include_scheduled: bool = True,
 ) -> list[dict]:
-    """Generate candidate windows for all pending/overdue tasks."""
+    """Generate candidate windows for all pending/overdue/scheduled tasks."""
+    statuses = [TaskStatus.PENDING, TaskStatus.OVERDUE]
+    if include_scheduled:
+        statuses.append(TaskStatus.SCHEDULED)
     tasks = db.query(MaintenanceTask).filter(
-        MaintenanceTask.status.in_([TaskStatus.PENDING, TaskStatus.OVERDUE])
+        MaintenanceTask.status.in_(statuses)
     ).all()
 
     all_candidates = []

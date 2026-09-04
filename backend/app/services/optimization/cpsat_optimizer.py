@@ -50,9 +50,10 @@ class BlockPlanOptimizer:
         Returns optimization result with plans, scores, and insights.
         """
         if not start_date:
-            start_date = date.today()
+            today = date.today()
+            start_date = today - timedelta(days=today.weekday())
         if not end_date:
-            end_date = start_date + timedelta(days=7)
+            end_date = start_date + timedelta(days=6)
 
         # 1. Get tasks to schedule
         query = self.db.query(MaintenanceTask).filter(
@@ -145,48 +146,66 @@ class BlockPlanOptimizer:
         w_grouping = int(self.settings.optimization_grouping_weight * 100)
         w_blocks = int(self.settings.optimization_block_count_weight * 100)
 
+        # Precalculate disruption for each window
+        window_disruptions = {wid: self._calculate_disruption(windows_map[wid]) for wid in window_ids if wid in windows_map}
+
         objective_terms = []
 
+        # 1. MAXIMIZE: Task completion, priority coverage, asset availability, candidate fit
         for task in tasks:
             for cand in task_candidates.get(task.id, []):
                 if (task.id, cand.block_window_id) not in x:
                     continue
                 var = x[(task.id, cand.block_window_id)]
 
-                # Priority reward: higher priority tasks get more reward
+                # Base completion reward: ensure every completed task is valued
+                base_reward = 500
+
+                # Priority reward: higher priority tasks get scaled reward
                 priority_reward = task.priority * w_priority
 
-                # Availability reward: scheduling improves availability
+                # Availability reward: scheduling improves asset health
                 avail_reward = 0
                 if task.asset:
-                    avail_reward = int((100 - task.asset.availability) * w_avail / 10)
+                    avail_reward = int((100 - task.asset.availability) * w_avail / 2)
 
                 # Candidate score reward
-                cand_reward = int(cand.validation.score * w_avail / 10)
+                cand_reward = int(cand.validation.score * 5)
 
-                total_reward = priority_reward + avail_reward + cand_reward
+                total_reward = base_reward + priority_reward + avail_reward + cand_reward
                 objective_terms.append(var * total_reward)
 
-        # Grouping bonus: reward tasks in same window+section
-        # This encourages integrated blocks
+        # 2. MAXIMIZE: Compatible integrated maintenance grouping
         for wid, tvars in window_tasks.items():
             if len(tvars) >= 2:
-                # Create a variable that's 1 if >= 2 tasks assigned
                 grouped = model.NewBoolVar(f"grouped_{wid}")
                 model.Add(sum(tvars) >= 2).OnlyEnforceIf(grouped)
                 model.Add(sum(tvars) < 2).OnlyEnforceIf(grouped.Not())
                 objective_terms.append(grouped * w_grouping * 50)
 
-        # Block count penalty: penalize using too many different windows
+        # 3. MINIMIZE: Block count, corridor block hours, and train disruption
         window_used = {}
         for wid in window_ids:
+            w = windows_map.get(wid)
+            if not w:
+                continue
             used_var = model.NewBoolVar(f"wused_{wid}")
             tvars = window_tasks.get(wid, [])
             if tvars:
                 model.Add(sum(tvars) >= 1).OnlyEnforceIf(used_var)
                 model.Add(sum(tvars) == 0).OnlyEnforceIf(used_var.Not())
                 window_used[wid] = used_var
-                objective_terms.append(used_var * (-w_blocks * 20))
+
+                # Penalize separate block count (fixed setup penalty per block)
+                objective_terms.append(used_var * (-w_blocks * 35))
+
+                # Penalize corridor closure duration (corridor block hours)
+                dur_hours = int(w.duration_minutes / 60)
+                objective_terms.append(used_var * (-dur_hours * w_blocks * 6))
+
+                # Penalize train disruption
+                disrup = int(window_disruptions.get(wid, 0))
+                objective_terms.append(used_var * (-int(disrup * w_disruption / 10)))
 
         if objective_terms:
             model.Maximize(sum(objective_terms))
@@ -208,7 +227,6 @@ class BlockPlanOptimizer:
         existing_plan_ids = [
             p.id for p in self.db.query(BlockPlan.id).filter(
                 BlockPlan.plan_type == "optimized",
-                BlockPlan.status == PlanStatus.DRAFT,
             ).all()
         ]
         if existing_plan_ids:
@@ -327,9 +345,13 @@ class BlockPlanOptimizer:
             grouping_rate = integrated_count / max(len(plans), 1)
             opt_score = round(
                 (completion_rate * 40 + priority_score * 30 + grouping_rate * 20 +
-                 (1 - min(total_disruption / 300, 1)) * 10),
+                 (1 - min(total_disruption / 10000, 1)) * 10),
                 1,
             )
+
+        for p in plans:
+            p.optimization_score = opt_score
+        self.db.commit()
 
         total_block_hours = sum(
             windows_map[p.block_window_id].duration_minutes / 60
@@ -430,9 +452,10 @@ class BaselinePlanner:
     ) -> dict:
         """Generate a baseline plan using simple first-fit scheduling."""
         if not start_date:
-            start_date = date.today()
+            today = date.today()
+            start_date = today - timedelta(days=today.weekday())
         if not end_date:
-            end_date = start_date + timedelta(days=7)
+            end_date = start_date + timedelta(days=6)
 
         query = self.db.query(MaintenanceTask).filter(
             MaintenanceTask.status.in_([TaskStatus.PENDING, TaskStatus.OVERDUE, TaskStatus.SCHEDULED])
@@ -521,7 +544,7 @@ class BaselinePlanner:
                 plan_date=window.date,
                 block_window_id=wid,
                 status=PlanStatus.DRAFT,
-                optimization_score=0.0,
+                optimization_score=round(len(assigned_tasks) / max(len(tasks), 1) * 50, 1),
                 train_disruption_minutes=disruption,
                 asset_availability_impact=round(avail_impact, 2),
                 is_integrated=is_integrated,
@@ -545,6 +568,12 @@ class BaselinePlanner:
                 current_start = end
 
             plans.append(plan)
+
+        scheduled_count = len(scheduled)
+        total_tasks = len(tasks)
+        base_score = round(scheduled_count / max(total_tasks, 1) * 50.0, 1)
+        for p in plans:
+            p.optimization_score = base_score
 
         self.db.commit()
 
