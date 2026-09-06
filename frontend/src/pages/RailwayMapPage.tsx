@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useEffect } from 'react';
 import { Network, Cpu, Info, ShieldCheck, Wrench, Layers } from 'lucide-react';
 import { Card } from "../components/Card";
 import { Badge } from "../components/Badge";
@@ -11,8 +9,6 @@ import { useDisruption } from '../components/DisruptionController';
 
 export const RailwayMapPage: React.FC = () => {
   const { activeDisruption } = useDisruption();
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
   const [network, setNetwork] = useState<NetworkData | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [selectedStation, setSelectedStation] = useState<StationNode | null>(null);
@@ -34,6 +30,7 @@ export const RailwayMapPage: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="space-y-6">

@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="h-16 bg-[#0a0f1d]/90 backdrop-blur-md border-b border-slate-800/80 px-6 flex items-center justify-between shrink-0 sticky top-0 z-30">
+    <header className="h-16 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-6 flex items-center justify-between shrink-0 sticky top-0 z-30">
       {/* Title & Status */}
       <div className="flex items-center gap-4">
         <div>
@@ -73,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all shadow-md ${
             isOptimizing
               ? 'bg-slate-700 cursor-not-allowed opacity-80'
-              : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-blue-500/25 active:scale-98'
+              : 'bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-400 hover:to-cyan-400 shadow-violet-500/25 active:scale-98'
           }`}
         >
           {isOptimizing ? (

@@ -52,6 +52,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const [detectionSummary, setDetectionSummary] = useState<DetectionSummary | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [scanStep, setScanStep] = useState<string>('');
+  const [hasScanned, setHasScanned] = useState<boolean>(false);
   const [schedulingAssetCode, setSchedulingAssetCode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -103,6 +104,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       // Also refresh main analytics & tasks
       const sumData = await api.getAnalyticsSummary();
       setSummary(sumData);
+      setHasScanned(true);
     } catch (err) {
       console.error('Failed to run maintenance scan', err);
     } finally {
@@ -367,6 +369,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
 
         {/* Detected Active Maintenance Asset Cards */}
+        {hasScanned && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
@@ -471,6 +474,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             ))}
           </div>
         </div>
+        )}
       </div>
 
       {/* KPI Cards Grid */}

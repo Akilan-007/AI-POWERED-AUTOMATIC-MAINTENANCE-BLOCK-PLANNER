@@ -1,21 +1,69 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-slate-950: #070B16;
+  --color-slate-900: #111A2E;
+  --color-slate-800: #16213A;
+  --color-slate-700: #24324A;
+  --color-slate-400: #94A3B8;
+  --color-slate-300: #CBD5E1;
+  --color-slate-200: #E2E8F0;
+  --color-slate-100: #F1F5F9;
+  
+  --color-cyan-400: #22D3EE;
+  --color-cyan-500: #06B6D4;
+  --color-cyan-600: #0891B2;
+  
+  --color-blue-300: var(--color-cyan-300);
+  --color-blue-400: var(--color-cyan-400);
+  --color-blue-500: var(--color-cyan-500);
+  --color-blue-600: var(--color-cyan-600);
+  --color-blue-800: var(--color-cyan-800);
+  --color-blue-900: var(--color-cyan-900);
+  --color-blue-950: var(--color-cyan-950);
+  
+  --color-sky-400: #38BDF8;
+  --color-sky-500: #0EA5E9;
+  
+  --color-violet-400: #A78BFA;
+  --color-violet-500: #8B5CF6;
+  --color-violet-600: #7C3AED;
+  
+  --color-indigo-400: var(--color-violet-400);
+  --color-indigo-500: var(--color-violet-500);
+  --color-indigo-600: var(--color-violet-600);
+  --color-indigo-800: var(--color-violet-800);
+  --color-indigo-900: var(--color-violet-900);
+  --color-indigo-950: var(--color-violet-950);
+  
+  --color-emerald-400: #34D399;
+  --color-amber-400: #FBBF24;
+  
+  --color-rose-500: #FB4F6A;
+  --color-red-400: #FB4F6A;
+  --color-red-500: #FB4F6A;
+  --color-red-600: #E11D48;
+}
+
 :root {
-  --bg-primary: #0a0f1d;
-  --bg-secondary: #0f172a;
-  --bg-card: #141e33;
-  --bg-card-hover: #1a2744;
-  --border-color: #1e293b;
-  --border-subtle: #2d3b55;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+  --bg-primary: var(--color-slate-950);
+  --bg-secondary: var(--color-slate-900);
+  --bg-card: var(--color-slate-900);
+  --bg-card-hover: var(--color-slate-800);
+  --border-color: var(--color-slate-800);
+  --border-subtle: var(--color-slate-700);
+  --text-primary: var(--color-slate-100);
+  --text-secondary: var(--color-slate-400);
   --text-muted: #64748b;
-  --rail-blue: #2563eb;
-  --rail-cyan: #06b6d4;
-  --rail-amber: #f59e0b;
-  --rail-emerald: #10b981;
-  --rail-rose: #f43f5e;
+  --rail-blue: var(--color-violet-500);
+  --rail-cyan: var(--color-cyan-400);
+  --rail-amber: var(--color-amber-400);
+  --rail-emerald: var(--color-emerald-400);
+  --rail-rose: var(--color-rose-500);
 }
 
 * {
@@ -25,8 +73,8 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #070c18;
-  color: #f8fafc;
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-100);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -47,22 +95,22 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b1120;
+  background: #0B1120;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #223254;
+  background: var(--color-slate-800);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334a77;
+  background: var(--color-slate-700);
 }
 
 /* Pulse animation for active blocks */
 @keyframes pulse-border {
-  0%, 100% { border-color: rgba(6, 182, 212, 0.4); box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
-  50% { border-color: rgba(6, 182, 212, 0.8); box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
+  0%, 100% { border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
+  50% { border-color: rgba(34, 211, 238, 0.8); box-shadow: 0 0 20px rgba(34, 211, 238, 0.4); }
 }
 
 .pulse-glow {
@@ -73,8 +121,8 @@ body {
 .railway-track-line {
   background-image: repeating-linear-gradient(
     90deg,
-    #3b82f6 0,
-    #3b82f6 12px,
+    var(--color-cyan-400) 0,
+    var(--color-cyan-400) 12px,
     transparent 12px,
     transparent 20px
   );
@@ -83,18 +131,18 @@ body {
 
 /* Leaflet dark theme adjustments */
 .leaflet-container {
-  background: #0b1222 !important;
+  background: #0B1120 !important;
   font-family: inherit;
 }
 
 .leaflet-popup-content-wrapper {
-  background: #141e33 !important;
-  color: #f8fafc !important;
-  border: 1px solid #2d3b55 !important;
+  background: var(--color-slate-900) !important;
+  color: var(--color-slate-100) !important;
+  border: 1px solid var(--color-slate-700) !important;
   border-radius: 8px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
 }
 
 .leaflet-popup-tip {
-  background: #141e33 !important;
+  background: var(--color-slate-900) !important;
 }

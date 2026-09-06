@@ -2,8 +2,9 @@ import React from 'react';
 import {
   LayoutDashboard,
   CalendarDays,
-  Wrench,
-  Route,
+  Network,
+  Sparkles,
+  SlidersHorizontal,
   BarChart3,
   Train,
   ShieldCheck,
@@ -12,8 +13,9 @@ import {
 export type NavTab =
   | 'dashboard'
   | 'planner'
-  | 'tasks'
   | 'network'
+  | 'insights'
+  | 'simulation'
   | 'analytics';
 
 interface NavItem {
@@ -22,6 +24,8 @@ interface NavItem {
   icon: React.FC<{ className?: string }>;
   badge?: string;
   count?: number;
+  highlight?: boolean;
+  countVariant?: 'critical' | 'default';
 }
 
 interface SidebarProps {
@@ -33,7 +37,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  pendingTasksCount = 5,
 }) => {
   const navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -43,28 +46,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: CalendarDays,
       badge: 'CP-SAT',
     },
+    { id: 'network', label: 'Railway Network', icon: Network },
     {
-      id: 'tasks',
-      label: 'Maintenance Inputs',
-      icon: Wrench,
-      count: pendingTasksCount,
+      id: 'insights',
+      label: 'AI Insights',
+      icon: Sparkles,
+      count: 9,
+      countVariant: 'critical',
     },
-    { id: 'network', label: 'Network Topology', icon: Route },
-    { id: 'analytics', label: 'Performance Analytics', icon: BarChart3 },
+    { id: 'simulation', label: 'Simulation & What-If', icon: SlidersHorizontal },
+    { id: 'analytics', label: 'Analytics & Baseline', icon: BarChart3 },
   ];
 
   return (
-    <aside className="w-64 bg-[#0a0f1d] border-r border-slate-800/80 flex flex-col shrink-0 min-h-screen">
+    <aside className="w-64 bg-[#0B1120] border-r border-slate-800/80 flex flex-col shrink-0 min-h-screen">
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-800/80">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-md shadow-blue-500/20 text-white">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-400 shadow-md shadow-cyan-500/20 text-white">
             <Train className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-sm text-slate-100 tracking-tight">RailBlock AI</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-semibold border border-cyan-500/30">
                 SIH26027
               </span>
             </div>
@@ -73,9 +78,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navigation List — flat, no category headers */}
+      {/* Navigation List */}
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          Operations
+        </div>
+        {navItems.slice(0, 2).map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
@@ -85,14 +93,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-slate-800/90 text-blue-400 border-l-2 border-blue-500 font-semibold'
+                  ? item.highlight
+                    ? 'bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-lg shadow-violet-600/30 font-semibold'
+                    : 'bg-slate-800/90 text-cyan-400 border border-cyan-500/30 font-semibold'
                   : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
               }`}
             >
               <div className="flex items-center gap-3">
                 <Icon
                   className={`w-4 h-4 ${
-                    isActive ? 'text-blue-400' : 'text-slate-400'
+                    isActive ? (item.highlight ? 'text-white' : 'text-cyan-400') : 'text-slate-400'
                   }`}
                 />
                 <span>{item.label}</span>
@@ -109,19 +119,67 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {item.badge}
                   </span>
                 )}
-                {item.count !== undefined && item.count > 0 && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                    {item.count}
-                  </span>
-                )}
               </div>
+            </button>
+          );
+        })}
+
+        <div className="pt-4 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          Network
+        </div>
+        {navItems.slice(2, 3).map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                isActive
+                  ? 'bg-slate-800/90 text-cyan-400 border border-cyan-500/30 font-semibold'
+                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <span>{item.label}</span>
+              </div>
+            </button>
+          );
+        })}
+
+        <div className="pt-4 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          AI & Decision Intelligence
+        </div>
+        {navItems.slice(3).map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                isActive
+                  ? 'bg-slate-800/90 text-violet-400 border border-violet-500/30 font-semibold'
+                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Icon className={`w-4 h-4 ${isActive ? 'text-violet-400' : 'text-slate-400'}`} />
+                <span>{item.label}</span>
+              </div>
+              {item.count !== undefined && item.count > 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                  {item.count}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
       {/* Prototype & Compliance Footer */}
-      <div className="p-3.5 border-t border-slate-800/80 bg-[#080d19]">
+      <div className="p-3.5 border-t border-slate-800/80 bg-[#0B1120]">
         <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 text-[11px] text-slate-400 space-y-1.5">
           <div className="flex items-center gap-1.5 font-semibold text-slate-300">
             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />

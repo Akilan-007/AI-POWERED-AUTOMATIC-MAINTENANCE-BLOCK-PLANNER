@@ -3,16 +3,17 @@ import { Sidebar, NavTab } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { DashboardPage } from './pages/DashboardPage';
 import { BlockPlannerPage } from './pages/BlockPlannerPage';
-import { MaintenanceTasksPage } from './pages/MaintenanceTasksPage';
 import { RailwayMapPage } from './pages/RailwayMapPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { AIInsightsPage } from './pages/AIInsightsPage';
+import { SimulationPage } from './pages/SimulationPage';
 import { DemoModeIndicator } from './components/DemoModeIndicator';
 import { api } from './services/api';
 
 import { DisruptionProvider } from './components/DisruptionController';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<NavTab>('analytics');
+  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
   const [lastOptimizedTime, setLastOptimizedTime] = useState<string>('');
   const [pendingCount, setPendingCount] = useState<number>(0);
@@ -52,7 +53,7 @@ export const App: React.FC = () => {
 
   return (
     <DisruptionProvider>
-      <div className="flex h-screen w-screen overflow-hidden bg-[#070c18] text-slate-100">
+      <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100">
         {/* Sidebar Navigation */}
         <Sidebar
           activeTab={activeTab}
@@ -70,7 +71,7 @@ export const App: React.FC = () => {
           />
 
           {/* Dynamic Page Views with scroll */}
-          <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-[#0a0f1d] to-[#070c18]">
+          <main className="flex-1 overflow-y-auto p-6 bg-slate-950">
             {activeTab === 'dashboard' && (
               <DashboardPage
                 onNavigate={setActiveTab}
@@ -78,8 +79,9 @@ export const App: React.FC = () => {
               />
             )}
             {activeTab === 'planner' && <BlockPlannerPage />}
-            {activeTab === 'tasks' && <MaintenanceTasksPage />}
             {activeTab === 'network' && <RailwayMapPage />}
+            {activeTab === 'insights' && <AIInsightsPage />}
+            {activeTab === 'simulation' && <SimulationPage />}
             {activeTab === 'analytics' && <AnalyticsPage />}
           </main>
         </div>
